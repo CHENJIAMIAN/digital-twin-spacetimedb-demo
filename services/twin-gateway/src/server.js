@@ -9,6 +9,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 8787;
 
 const state = new Map();
+const SELF_SIMULATE = process.env.SELF_SIMULATE === 'true';
 
 function scoreHealth(t) {
   const tempPenalty = Math.max(0, t.temperature - 70) * 0.8;
@@ -65,3 +66,26 @@ setInterval(() => {
   }, { total: 0, critical: 0, warning: 0 });
   broadcast({ type: 'fleet_summary', payload: summary });
 }, 3000);
+
+if (SELF_SIMULATE) {
+  const devices = Array.from({ length: 8 }, (_, i) => ({
+    deviceId: `pump-${(i + 1).toString().padStart(2, '0')}`,
+    line: i < 4 ? 'line-a' : 'line-b',
+    temperature: 58 + Math.random() * 8,
+    vibration: 20 + Math.random() * 6,
+    powerKw: 11 + Math.random() * 2,
+  }));
+  const jitter = (x, r = 2) => x + (Math.random() - 0.5) * r;
+  setInterval(() => {
+    for (const d of devices) {
+      d.temperature = jitter(d.temperature, 4);
+      d.vibration = jitter(d.vibration, 3);
+      d.powerKw = jitter(d.powerKw, 1);
+      if (Math.random() < 0.03) d.temperature += 20;
+      if (Math.random() < 0.03) d.vibration += 15;
+      const row = upsertTelemetry(d);
+      broadcast({ type: 'device_update', payload: row });
+    }
+  }, 1000);
+  console.log('[gateway] SELF_SIMULATE enabled');
+}
