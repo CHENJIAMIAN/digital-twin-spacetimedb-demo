@@ -1,0 +1,9 @@
+{
+  "name": "@twin/dashboard",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/dev-server.js",
+    "build": "echo dashboard-no-build"
+  }
+}

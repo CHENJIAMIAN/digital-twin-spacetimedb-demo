@@ -1,0 +1,12 @@
+{
+  "name": "digital-twin-spacetimedb",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @twin/gateway dev\" \"pnpm --filter @twin/dashboard dev\" \"pnpm --filter @twin/simulator dev\"",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

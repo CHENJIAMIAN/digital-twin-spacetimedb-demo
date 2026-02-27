@@ -1,0 +1,9 @@
+{
+  "name": "@twin/simulator",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/sim.js",
+    "build": "echo simulator-no-build"
+  }
+}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Twin Console</title>
+  <style>
+    body{font-family:Inter,system-ui;background:#0b1020;color:#e5e7eb;margin:0;padding:16px}
+    .cards{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px;margin-bottom:12px}
+    .card{background:#141b34;border:1px solid #273252;border-radius:12px;padding:12px}
+    table{width:100%;border-collapse:collapse;background:#141b34;border-radius:12px;overflow:hidden}
+    th,td{padding:10px;border-bottom:1px solid #243055;text-align:left;font-size:13px}
+    .critical{color:#ff6b6b}.warning{color:#ffd166}.normal{color:#72f1b8}
+  </style>
+</head>
+<body>
+  <h2>工厂数字孪生大屏（MVP）</h2>
+  <div class="cards" id="cards"></div>
+  <table>
+    <thead><tr><th>设备</th><th>产线</th><th>温度</th><th>振动</th><th>功耗(kW)</th><th>健康分</th><th>告警</th><th>更新时间</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+<script>
+const state = new Map();
+const cards = document.getElementById('cards');
+const tbody = document.getElementById('tbody');
+
+function renderSummary() {
+  const arr = [...state.values()];
+  const critical = arr.filter(d=>d.alarmLevel==='critical').length;
+  const warning = arr.filter(d=>d.alarmLevel==='warning').length;
+  const avgHealth = arr.length?Math.round(arr.reduce((a,b)=>a+b.healthScore,0)/arr.length):0;
+  cards.innerHTML = [
+    ['设备总数', arr.length],
+    ['严重告警', critical],
+    ['预警数', warning],
+    ['平均健康分', avgHealth]
+  ].map(([k,v])=>`<div class='card'><div>${k}</div><h2>${v}</h2></div>`).join('');
+}
+
+function renderTable() {
+  tbody.innerHTML = [...state.values()].sort((a,b)=>b.updatedAt-a.updatedAt).map(d=>`<tr>
+    <td>${d.deviceId}</td><td>${d.line}</td><td>${d.temperature.toFixed(1)}℃</td><td>${d.vibration.toFixed(1)}</td>
+    <td>${d.powerKw.toFixed(1)}</td><td>${d.healthScore}</td><td class='${d.alarmLevel}'>${d.alarmLevel}</td>
+    <td>${new Date(d.updatedAt).toLocaleTimeString()}</td></tr>`).join('');
+}
+
+fetch('http://localhost:8787/snapshot').then(r=>r.json()).then(data=>{
+  (data.devices||[]).forEach(d=>state.set(d.deviceId,d));
+  renderSummary(); renderTable();
+});
+
+const ws = new WebSocket('ws://localhost:8787/ws');
+ws.onmessage = (ev)=>{
+  const msg = JSON.parse(ev.data);
+  if (msg.type==='device_update') {
+    state.set(msg.payload.deviceId, msg.payload);
+    renderSummary(); renderTable();
+  }
+}
+</script>
+</body></html>
