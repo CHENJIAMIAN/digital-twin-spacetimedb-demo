@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: digital-twin-gateway
+    env: docker
+    rootDir: services/twin-gateway
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8787
+      - key: SELF_SIMULATE
+        value: true
