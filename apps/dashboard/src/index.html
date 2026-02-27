@@ -25,6 +25,19 @@ const state = new Map();
 const cards = document.getElementById('cards');
 const tbody = document.getElementById('tbody');
 
+const q = new URLSearchParams(location.search);
+const API_BASE = q.get('api') || localStorage.getItem('twin_api_base') || 'http://localhost:8787';
+const WS_BASE = q.get('ws') || localStorage.getItem('twin_ws_base') || API_BASE.replace(/^http/, 'ws');
+localStorage.setItem('twin_api_base', API_BASE);
+localStorage.setItem('twin_ws_base', WS_BASE);
+
+const tip = document.createElement('div');
+tip.style.margin = '8px 0 12px';
+tip.style.fontSize = '12px';
+tip.style.opacity = '0.8';
+tip.textContent = `API: ${API_BASE} | WS: ${WS_BASE}/ws`;
+document.body.insertBefore(tip, document.body.children[1]);
+
 function renderSummary() {
   const arr = [...state.values()];
   const critical = arr.filter(d=>d.alarmLevel==='critical').length;
@@ -45,12 +58,12 @@ function renderTable() {
     <td>${new Date(d.updatedAt).toLocaleTimeString()}</td></tr>`).join('');
 }
 
-fetch('http://localhost:8787/snapshot').then(r=>r.json()).then(data=>{
+fetch(`${API_BASE}/snapshot`).then(r=>r.json()).then(data=>{
   (data.devices||[]).forEach(d=>state.set(d.deviceId,d));
   renderSummary(); renderTable();
 });
 
-const ws = new WebSocket('ws://localhost:8787/ws');
+const ws = new WebSocket(`${WS_BASE}/ws`);
 ws.onmessage = (ev)=>{
   const msg = JSON.parse(ev.data);
   if (msg.type==='device_update') {
