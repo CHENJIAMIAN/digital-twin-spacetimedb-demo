@@ -1,3 +1,11 @@
+[English](./README.en.md)
+
+<!-- codex-github-rules:bilingual-summary -->
+> **中文简介**：包含实时网关和看板的数字孪生演示
+>
+> **English summary**: A digital-twin demo with a real-time gateway and dashboard
+
+---
 # Digital Twin（SpacetimeDB-ready）
 
 这是一个真实可跑的数字孪生 MVP：
