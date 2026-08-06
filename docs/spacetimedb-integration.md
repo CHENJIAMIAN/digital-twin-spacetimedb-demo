@@ -1,5 +1,7 @@
 # SpacetimeDB 接入说明（从当前 MVP 升级）
 
+> [English](spacetimedb-integration.en.md)
+
 当前项目先把“真实业务闭环”跑通：
 - 传感器模拟器持续写入 telemetry
 - 网关计算健康分与告警等级
